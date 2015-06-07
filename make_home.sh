@@ -1,91 +1,131 @@
-#!/bin/bash
+#!/bin/sh
+# ------------------------------------------------------------------
+# Author: John Oliphant 
+# Title:  make_home.sh
+# Descr:  Git based linux home config script.  Script will fully
+#         configure a users home directory and install home configs.
+#         This is my personal version, not all configs will apply.
+# ------------------------------------------------------------------
 
-# config script
+# Set some safety flags
+set -o nounset  # variables must be set
+set -o errexit  # kill execution on error
 
 # Arch base packages
-ArchBase=('geany' 'geany-themes' 'git' 'vim' 'vmware-horizon-client'
-          'cataclysm-dda-git')
+archBase=('wget' 'git' 'vim')
 
 # Arch xfce packages
-ArchXfce=('kupfer' '')
+archXfce=('kupfer' 'geany' 'geany-themes' 'vmware-horizon-client'
+          'cataclysm-dda-git')
 
 # Arch Gnome packages
-ArchGnome=('evopop-gtk-theme' 'evopop-icon-theme' '')
+archGnome=('evopop-gtk-theme' 'geany' 'evopop-icon-theme'
+           'vmware-horizon-client' 'cataclysm-dda-git')
+   
+# Check to see if package is installed        
+alreadyInstalled() {
+  pacman -Qi -- "$1" &>/dev/null
+}
 
-# Check and Install function
+# Check to see if group is installed        
+groupAlreadyInstalled() {
+  pacman -Qg -- "$1" &>/dev/null
+}
+
+# Install function
 # Uses Packer
-CheckInstall () {
-   pkgInstalled=null
-   pkgInstalled=`pacman -Qi $1 | grep -o 'Name'`
-   if [ $pkgInstalled -a "Name" ]
+pkgInstall () {
+   if alreadyInstalled "$arpkg";
    then
        echo "Ooops $arpkg is already installed, skipping"
        pkgInstalled="True"
    else
       echo "$arpkg has not been installed, installing"
-      packer -S $arpkg --noconfirm --noedit
+      packer -S $arpkg --noconfirm
       pkgInstalled="False"
    fi
 }
 
-#CYGWIN=`uname | grep -o 'CYGWIN'`
-#echo "$CYGWIN is the env"
-
-# If system is ARCH let's get some stuff
+# ARCH configuration
 echo "Is this an ARCH build? (y,n)"
 read ARCH
-
 if [ $ARCH == "y" ]
 then
    echo "Setting up ARCH..."
+   
+   #  Is this a 32bit or 64bit architecture?
    echo "Checking architecture..."
-   # 64 or 32 bit?
    case $(uname -m) in
       x86_64) BITS=64 ;;
       i*86) BITS=32 ;;
          *) BITS=? ;;
    esac
-
+   
+   # If 64bit enable multilib
    if [ $BITS = 64 ]
    then
-      # Enable multilib repo
-      sudo sed -i -e "s/#\[multilib]/[multilib]/g" -e "s/#Include = \/etc\/pacman.d\/mirrorlist/Include = \/etc\/pacman.d\/mirrorlist/g" /etc/pacman.conf
+      sudo sed -i -e 's/#\[multilib]/[multilib]/g' -e '/\[multilib]/!b;n
+         cInclude = \/etc\/pacman.d\/mirrorlist' /etc/pacman.conf
       echo "Found 64 bit architecture, multilib enabled."
    else
       echo "Found 32 bit, no changes needed."
    fi
 
+   # Full system update
    echo "Updating system."
    sudo pacman -Syu --needed --noconfirm
-
-   echo "Getting Packer."
-   arpkg="packer"
    
-   echo "$pkgInstalled"
+   # Check for base-devel package
+   echo "Getting base developement packages."
+   arpkg="base-devel"
    
-   CheckInstall $arpkg
-
-   if [ $pkgInstalled -a "True" ]
+   if groupAlreadyInstalled "$arpkg";
    then
+      echo "Base-devel already installed, moving on."
+   else
+      sudo pacman -S "$arpkg" --needed --noconfirm 
+   fi
+
+   # Get Packer
+   # Bash wrapper for pacman and aur
+   echo "Getting Packer" 
+   arpkg="packer"
+
+   if alreadyInstalled "$arpkg";
+   then
+      echo "Packer already here, moving on."
+   else
       cd ~/
       wget https://aur.archlinux.org/packages/pa/packer/packer.tar.gz
       tar -xvf packer.tar.gz
       cd packer
       makepkg -s
-      pacman -U packer.tar.xz
+      sudo pacman -U packer*.pkg.tar.xz
    fi
+   
+   # Install the base packages
+   for arpkg in "${archBase[@]}"
+   do
+      pkgInstall "$arpkg"
+   done
 
 else
    echo "No Arch?  Moving on then."
 fi
 
 # Copy config files to home
-echo "Copying configs to home"
-cp .bashrc ~/
-cp .gitconfig ~/
-cp .vimrc ~/
-cp .minttyrc ~/
+cd ~/linux_home_config
+echo "Copying configs to home ..."
+cp .bashrc ~/     && echo ".bashrc"
+cp .gitconfig ~/  && echo ".gitconfig"
+cp .vimrc ~/      && echo ".vimrc"
+cp .minttyrc ~/   && echo ".minttyrc"
 
+# Source our bashrc to make ourselves at home
+source ~/.bashrc
+
+# All's well that ends well.
+echo "Script compeleted"
 
 
 
