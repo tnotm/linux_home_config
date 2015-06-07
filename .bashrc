@@ -95,14 +95,9 @@
 # alias cp='cp -i'
 # alias mv='mv -i'
 #
-# Default to human readable figures
-# alias df='df -h'
-# alias du='du -h'
-#
 # Misc :)
 # alias less='less -r'                          # raw control characters
 # alias whence='type -a'                        # where, of a sort
-# alias grep='grep --color'                     # show differences in colour
 # alias egrep='egrep --color=auto'              # show differences in colour
 # alias fgrep='fgrep --color=auto'              # show differences in colour
 #
@@ -196,7 +191,6 @@
 # }
 # 
 # alias cd=cd_func
-curr_date=$(date +"%Y-%m-%d")
 
 #export no_proxy=localhost,127.0.0.0/8,*.local
 #export NO_PROXY=localhost,127.0.0.0/8,*.local
@@ -207,34 +201,30 @@ curr_date=$(date +"%Y-%m-%d")
 #export https_proxy=$h_proxy
 #export HTTPS_PROXY=$h_proxy
 
-# Add alias for pushing articles - JTO
-alias pushart='scp -r ~/articles/ tnotmotnotf@chirpdash.com:/home/content/19/9754919/html/'
+##  Begin Personal Config
 
-## Colorize the ls output ##
-alias ls='ls --color=auto'
- 
-## Use a long listing format ##
-alias ll='ls -la'
- 
-## Show hidden files ##
-alias l.='ls -d .* --color=auto'
+# Vars
+curr_date=$(date +"%Y-%m-%d")
 
-alias diff='colordiff'
+## Stantard Alias'
+
+## TODO:  Configure edit based on environment
+#  Cygwin should be Notepad++ @ Program files x86 vs 64
+#  Console only should be VIM
+#  Linux with DE should be Geany
 alias edit='/cygdrive/c/Program\ Files/Notepad++/Notepad++.exe'
+alias diff='colordiff'
 alias vi='vim'
-alias np='/cygdrive/c/Program\ Files/Notepad++/notepad++.exe'
+alias ls='ls --color=auto'      ## Colorize the ls output
+alias ll='ls -la'      ## Use a long listing format 
+alias l.='ls -d .* --color=auto'      ## Show hidden files ##
+alias grep='grep --color'                     # show differences in colour
+alias df='df -h'
+alias du='du -h'
 
-# Todo.txt additions
-source ~/bin/todo/todo_completion
-alias t='~/bin/todo/todo.sh'
-complete -F _todo t
-export TODOTXT_DEFAULT_ACTION=ls
+## Functional alias'
 
-# Random alias
+# Examples
 alias synchome='rsync -ruv /home/ /cygdrive/u/home/ &&
     rsync -ruv "/cygdrive/k/Documents and Settings/joliphan/Favorites/" /cygdrive/u/Apps/Favorites/'
-
 alias udrive='cd /cygdrive/u/'
-
-alias xrates='cd /cygdrive/s/ISApps/Tasks/Back\ Office/FS/Track\ 18978\ \-\ PS\ GL\ FX\ Rates\ Export\ for\ HFM/'
-alias pstb='cd /cygdrive/s/ISApps/Tasks/Back\ Office/FS/Track\ 18833\ \-\ PS\ GL\ TB\ Export\ for\ HFM/'

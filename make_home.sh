@@ -32,8 +32,7 @@ groupAlreadyInstalled() {
   pacman -Qg -- "$1" &>/dev/null
 }
 
-# Install function
-# Uses Packer
+# Install function using Packer
 pkgInstall () {
    if alreadyInstalled "$arpkg";
    then
